@@ -36,6 +36,17 @@ class AuthService:
         db.add(user)
         await db.flush()
         await db.refresh(user)
+
+        # Publish event to Kafka
+        from app.core.kafka import publish_event
+        await publish_event("user-events", {
+            "type": "user_registered",
+            "user_id": user.id,
+            "email": user.email,
+            "username": user.username,
+            "role": user.role.value,
+        })
+
         return UserResponse.model_validate(user)
 
     @staticmethod
@@ -53,6 +64,16 @@ class AuthService:
 
         # Create both tokens
         token_data = {"sub": str(user.id), "role": user.role.value}
+
+        # Publish login event to Kafka
+        from app.core.kafka import publish_event
+        await publish_event("user-events", {
+            "type": "user_login",
+            "user_id": user.id,
+            "email": user.email,
+            "role": user.role.value,
+        })
+
         return TokenResponse(
             access_token=create_token(token_data, token_type="access"),
             refresh_token=create_token(token_data, token_type="refresh"),
