@@ -4,14 +4,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import auth, users
 from app.core.config import settings
 from app.core.database import Base, engine
+from app.core.kafka import start_producer, stop_producer
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print(f"✅ {settings.APP_NAME} started. DB tables ready.")
+
+    
+    await start_producer()
+
     yield
+
+    
+    await stop_producer()
     await engine.dispose()
     print("🛑 Shutting down.")
 
