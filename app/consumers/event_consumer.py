@@ -14,12 +14,21 @@ async def handle_event(event: dict):
     if event_type == "user_registered":
         logger.info(f"🎉 New user registered: {event.get('email')}")
 
+       
+        from app.core.ai_client import classify_event
+        classification = await classify_event(event)
+        event["classification"] = classification
+        logger.info(f"🤖 Classified as: {classification}")
+
         
+        from app.core.vector_store import store_event
+        await store_event(event)
+
+       
         from app.tasks.notification_tasks import (
             send_welcome_email,
             notify_admin_new_user,
         )
-       
         send_welcome_email.delay(
             user_id=event.get("user_id"),
             email=event.get("email"),
@@ -30,14 +39,20 @@ async def handle_event(event: dict):
             email=event.get("email"),
             role=event.get("role"),
         )
-        logger.info(f"✅ Celery tasks triggered for {event.get('email')}")
+        logger.info(f"✅ AI processed and Celery tasks triggered")
 
     elif event_type == "user_login":
         logger.info(f"🔑 User logged in: {event.get('email')}")
 
+     
+        from app.core.ai_client import classify_event
+        from app.core.vector_store import store_event
+        classification = await classify_event(event)
+        event["classification"] = classification
+        await store_event(event)
+
     else:
         logger.info(f"📨 Unknown event: {event.get('type')}")
-
 
 async def consume_events():
     logger.info("🚀 Starting Kafka consumer...")

@@ -5,6 +5,7 @@ from app.api.routes import auth, users
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.core.kafka import start_producer, stop_producer
+from app.api.routes import auth, users, ai
 
 
 @asynccontextmanager
@@ -43,6 +44,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
+app.include_router(ai.router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Health"])
