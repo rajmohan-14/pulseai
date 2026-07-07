@@ -65,6 +65,26 @@ async def consume_events():
         auto_offset_reset="earliest",
     )
 
+    for attempt in range(10):
+        try:
+            await consumer.start()
+            logger.info("✅ Kafka consumer started. Listening for events...")
+            break
+        except Exception as e:
+            logger.warning(f"Kafka not ready (attempt {attempt+1}/10) — retrying in 5s...")
+            await asyncio.sleep(5)
+    else:
+        logger.error("❌ Could not connect to Kafka after 10 attempts")
+        return
+
+    try:
+        async for message in consumer:
+            logger.info(f"📬 Event received from '{message.topic}'")
+            await handle_event(message.value)
+    except Exception as e:
+        logger.error(f"Consumer error: {e}")
+    finally:
+        await consumer.stop()
     await consumer.start()
     logger.info("✅ Kafka consumer started. Listening for events...")
 
