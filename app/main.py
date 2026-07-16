@@ -6,7 +6,7 @@ from app.core.config import settings
 from app.core.database import Base, engine
 from app.core.kafka import start_producer, stop_producer
 from app.api.routes import auth, users, ai
-
+from prometheus_fastapi_instrumentator import Instrumentator
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,6 +41,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+Instrumentator().instrument(app).expose(app)
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
