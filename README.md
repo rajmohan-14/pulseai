@@ -297,5 +297,5 @@ The AI will search the vector database and return a natural language answer base
 ## Author
 
 **Raj Mohan**  
-Final-year CSE student | Backend Developer  
+Final-year ISE student | Backend Developer  
 [GitHub](https://github.com/rajmohan-14)
