@@ -3,6 +3,7 @@ services:
   db:
     image: postgres:16
     container_name: pulseai_db
+    restart: always
     environment:
       POSTGRES_DB: pulseai
       POSTGRES_USER: raj
@@ -15,12 +16,14 @@ services:
   redis:
     image: redis:7-alpine
     container_name: pulseai_redis
+    restart: always
     ports:
       - "6379:6379"
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: pulseai_zookeeper
+    restart: always
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -28,6 +31,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: pulseai_kafka
+    restart: always
     depends_on:
       - zookeeper
     ports:
@@ -40,7 +44,8 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-prometheus:
+
+  prometheus:
     image: prom/prometheus:latest
     container_name: pulseai_prometheus
     restart: always
@@ -49,7 +54,7 @@ prometheus:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
-grafana:
+  grafana:
     image: grafana/grafana:latest
     container_name: pulseai_grafana
     restart: always
@@ -59,5 +64,6 @@ grafana:
       GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
       - prometheus
+
 volumes:
   postgres_data:
